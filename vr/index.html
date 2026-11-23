@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="赤い屋根の家を目印に、住宅街を地上と上空から見比べるA-FrameのVR作品。">
+  <title>ミニタウン散歩VR</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+  <script src="../town.js" defer></script>
+  <script src="walk.js" defer></script>
+</head>
+<body>
+  <a-scene id="world" background="color: #afcdd5" fog="type: linear; color: #afcdd5; near: 37; far: 98"
+    renderer="antialias: true; colorManagement: true" xr-mode-ui="XRMode: vr">
+    <a-plane position="0 -0.02 0" rotation="-90 0 0" width="220" height="220" color="#819875"></a-plane>
+    <a-entity light="type: ambient; color: #e3efff; intensity: 0.95"></a-entity>
+    <a-entity position="-8 15 7" light="type: directional; color: #ffe4ba; intensity: 1.5"></a-entity>
+    <a-entity id="neighborhood" scale="5 5 5"></a-entity>
+    <a-entity id="rig" position="-1 0.27 10.6">
+      <a-entity id="eyes" position="0 1.65 0" camera="fov: 68; near: 0.05" look-controls></a-entity>
+      <a-entity id="left-hand" laser-controls="hand: left"></a-entity>
+    </a-entity>
+  </a-scene>
+  <header class="title">
+    <p>空間情報コンピューティング 第7回</p>
+    <h1>ミニタウン散歩VR</h1>
+  </header>
+  <main class="panel" aria-label="散歩の操作">
+    <p id="place" role="status" aria-live="polite">街を読み込んでいます</p>
+    <nav aria-label="視点を選ぶ">
+      <button type="button" data-view="home" aria-pressed="true">家の前</button>
+      <button type="button" data-view="shop" aria-pressed="false">店の前</button>
+      <button type="button" data-view="trees" aria-pressed="false">並木道</button>
+      <button type="button" data-view="overview" aria-pressed="false">街を俯瞰</button>
+    </nav>
+    <p class="help">PCはWASD・矢印キーで移動。ドラッグで見回せます。</p>
+    <p class="help touch-help">画面をドラッグして見回し、地点ボタンで移動します。</p>
+  </main>
+  <noscript>JavaScriptを有効にすると街を表示できます。</noscript>
+</body>
+</html>

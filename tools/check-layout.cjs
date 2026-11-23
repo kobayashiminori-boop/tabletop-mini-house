@@ -14,7 +14,7 @@ class Geometry {constructor(shape,options){this.shape=shape;this.options=options
 class Mesh {constructor(geometry){this.geometry=geometry;}}
 const context = vm.createContext({URLSearchParams,location:{search:''},document:{createElement:make,getElementById:()=>make('ui')},
   AFRAME:{THREE:{Shape,ExtrudeGeometry:Geometry,Mesh,MeshStandardMaterial:class{}}}});
-vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../script.js'),'utf8'),context);
+vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../town.js'),'utf8'),context);
 vm.runInContext('buildTown(null)',context);
 const xyz = v => String(v || '0 0 0').split(' ').map(Number);
 function position(node){const p=xyz(node.attrs.position);if(node.parent){const a=position(node.parent);return p.map((v,i)=>v+a[i]);}return p;}
