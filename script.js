@@ -1,5 +1,3 @@
-/* 授業資料の基本構成：a-scene / a-marker / a-entity camera。
- * 外部3Dモデルは使用せず、A-Frameの基本図形から街を作成する。 */
 'use strict';
 const params = new URLSearchParams(location.search);
 const preview = params.get('mode') === 'preview';
