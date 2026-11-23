@@ -36,6 +36,30 @@ button:focus-visible { outline: 3px solid #b26535; outline-offset: 2px; }
 .help { font-size: 11px; margin: 8px 0 0; }
 .touch-help { display: none; }
 .immersive .title, .immersive .panel { display: none; }
+.vr-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+#stereo-start { background: #315746; color: white; border-color: #315746; }
+#stereo-start:disabled { opacity: .55; cursor: wait; }
+#vr-error { margin: 8px 0 0; max-width: 290px; font-size: 12px; }
+#stereo-view { position: fixed; inset: 0; z-index: 4; pointer-events: none; }
+#stereo-canvas { display: block; width: 100%; height: 100%; }
+.eye-divider { position: absolute; inset: 0 auto 0 50%; width: 2px; background: #172820; }
+#stereo-stop { position: absolute; top: 12px; right: 12px; pointer-events: auto; }
+#stereo-help {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 85%;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: white;
+  background: #172820d9;
+  font-size: 12px;
+  text-align: center;
+}
+.stereo-active .title, .stereo-active .panel { visibility: hidden; }
 
 @media (pointer: coarse) {
   .help { display: none; }

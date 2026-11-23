@@ -9,10 +9,12 @@
   <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
   <script src="../town.js" defer></script>
   <script src="walk.js" defer></script>
+  <script src="stereo.js" defer></script>
 </head>
 <body>
   <a-scene id="world" background="color: #afcdd5" fog="type: linear; color: #afcdd5; near: 37; far: 98"
-    renderer="antialias: true; colorManagement: true" xr-mode-ui="XRMode: vr">
+    renderer="antialias: true; colorManagement: true" xr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
     <a-plane position="0 -0.02 0" rotation="-90 0 0" width="220" height="220" color="#819875"></a-plane>
     <a-entity light="type: ambient; color: #e3efff; intensity: 0.95"></a-entity>
     <a-entity position="-8 15 7" light="type: directional; color: #ffe4ba; intensity: 1.5"></a-entity>
@@ -34,9 +36,20 @@
       <button type="button" data-view="trees" aria-pressed="false">並木道</button>
       <button type="button" data-view="overview" aria-pressed="false">街を俯瞰</button>
     </nav>
+    <div class="vr-actions">
+      <button id="stereo-start" type="button" disabled>二眼VRを開始</button>
+      <button id="headset-start" type="button" hidden>ヘッドセットでVR</button>
+    </div>
     <p class="help">PCはWASD・矢印キーで移動。ドラッグで見回せます。</p>
     <p class="help touch-help">画面をドラッグして見回し、地点ボタンで移動します。</p>
+    <p id="vr-error" role="status" hidden></p>
   </main>
+  <section id="stereo-view" aria-label="左右二眼VR" hidden>
+    <canvas id="stereo-canvas" aria-label="左目と右目の立体映像"></canvas>
+    <div class="eye-divider"></div>
+    <p id="stereo-help">スマートフォンを横向きにすると、左右の映像が広がります。</p>
+    <button id="stereo-stop" type="button">二眼VRを終了</button>
+  </section>
   <noscript>JavaScriptを有効にすると街を表示できます。</noscript>
 </body>
 </html>
