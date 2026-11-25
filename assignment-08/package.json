@@ -1,0 +1,19 @@
+{
+  "name": "waterfront-gallery",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "prettier --check *.mjs *.cjs && node build.mjs",
+    "format": "prettier --write *.mjs *.cjs"
+  },
+  "dependencies": {
+    "rbxm-parser": "1.1.4"
+  },
+  "devDependencies": {
+    "prettier": "3.10.1"
+  },
+  "engines": {
+    "node": ">=22.15"
+  }
+}
