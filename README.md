@@ -1,18 +1,7 @@
-# ミニタウン散歩VR
+# 空間情報コンピューティング制作集
 
-[公開ページ](https://kobayashiminori-boop.github.io/tabletop-mini-house/vr/)
+- 第6回 [卓上ミニハウスAR](https://kobayashiminori-boop.github.io/tabletop-mini-house/assignment-06/) — `assignment-06/`
+- 第7回 [ミニタウン散歩VR](https://kobayashiminori-boop.github.io/tabletop-mini-house/assignment-07/) — `assignment-07/`
+- 第8回 Roblox展示空間 — `assignment-08/`
 
-A-Frame 1.7.1で、住宅街を地上の目線と俯瞰の両方から観察できます。
-PCではWASD・矢印キーで移動し、ドラッグで見回します。スマートフォンでは画面をドラッグして見回し、地点ボタンで移動します。
-「二眼VRを開始」で左右の目の位置から描画した立体映像を表示します。簡易VRゴーグルではスマートフォンを横向きにし、端末の向きの利用を求められた場合は許可します。
-WebXR対応機器では「ヘッドセットでVR」が表示されます。左コントローラーのスティックに対応しています。
-街の形状は AR と VR で `town.js` を共用しています。
-
-## ファイル構成
-
-- `vr/` — VRの画面、移動、視点切り替え、二眼表示
-- `town.js` — 街の3Dモデルと配置
-
-## 別作品
-
-- [卓上ミニハウスAR](docs/ar.md)
+ARとVRの街のモデルは `shared/town.js` に共通化しています。

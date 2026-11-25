@@ -2,7 +2,7 @@
 from pathlib import Path
 from PIL import Image, ImageDraw
 
-assets = Path(__file__).resolve().parents[1] / 'assets'
+assets = Path(__file__).resolve().parent / 'assets'
 assets.mkdir(exist_ok=True)
 inner = Image.new('RGB', (400, 400), 'white')
 d = ImageDraw.Draw(inner)
