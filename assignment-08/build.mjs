@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { writeFileSync } from "node:fs";
 import { registerHooks } from "node:module";
+import { addWetlandExhibits } from "./wetland-exhibits.mjs";
 
 const portableLz4 = new URL("./lz4-portable.cjs", import.meta.url).href;
 const hook = registerHooks({
@@ -37,10 +38,21 @@ const palette = {
   wood: "#b78056",
   mint: "#479a87",
   blue: "#438aa4",
-  deepWater: "#14587c",
-  turquoise: "#18a9c0",
-  foam: "#eefcff",
-  coral: "#c86f51",
+  water: "#5a9ba6",
+  ivory: "#f7f0de",
+  gooseBrown: "#826749",
+  bark: "#4c3b2d",
+  feather: "#7a7972",
+  silvery: "#b5b7ae",
+  peach: "#d89b78",
+  charcoal: "#302e2e",
+  chestnut: "#684836",
+  blueGrey: "#617d91",
+  leafDark: "#3a5d37",
+  leafGreen: "#507141",
+  leafLight: "#789555",
+  marshEarth: "#665641",
+  seed: "#937b4c",
   cream: "#f1ddb3",
 };
 
@@ -141,7 +153,7 @@ for (const direction of [-1, 1]) {
   );
 }
 box(architecture, "Entrance Sign", [0, 8, 22], [16, 2.4, 1.3], "ink", {
-  label: "WATERFRONT GALLERY",
+  label: "IZUNUMA WETLAND GALLERY",
 });
 box(architecture, "Spawn", [0, 0.18, 27], [6, 0.36, 4], "mint", {
   spawn: true,
@@ -151,124 +163,41 @@ box(architecture, "Floor Guide", [0, 0.015, 11], [1.6, 0.03, 21], "mint", {
 });
 
 const stations = [
-  { x: -18, name: "01  WAVE", tone: "blue" },
-  { x: 0, name: "02  LIGHTHOUSE", tone: "coral" },
-  { x: 18, name: "03  BRIDGE", tone: "mint" },
+  { x: -18, title: "01 Goose", sign: "01  WHITE-FRONTED GOOSE" },
+  { x: 0, title: "02 Pintail", sign: "02  NORTHERN PINTAIL" },
+  { x: 18, title: "03 Makomo", sign: "03  MAKOMO" },
 ];
-for (const { x, name, tone } of stations) {
-  box(exhibits, name, [x, 0.75, -15], [10, 1.5, 7], "wood");
-  box(exhibits, `${name} Label`, [x, 0.8, -11.43], [8.6, 1.08, 0.14], "ink", {
-    label: name,
+for (const { x, title, sign } of stations) {
+  box(exhibits, title, [x, 0.75, -15], [10, 1.5, 7], "wood");
+  box(exhibits, `${title} Label`, [x, 0.8, -11.43], [9.2, 1.08, 0.14], "ink", {
+    label: sign,
   });
-  box(exhibits, `${name} Accent`, [x, 0.015, -8], [8, 0.03, 0.8], tone, {
+  box(exhibits, `${title} Accent`, [x, 0.015, -8], [8, 0.03, 0.8], "water", {
     collide: false,
   });
 }
-const wave = new Model();
-wave.Name = "Breaking Wave";
-wave.Parent = exhibits;
-const waveOrigin = [-18, 1.5, -15];
-const swell = [
-  [-4.05, 0.65],
-  [-2.7, 1.15],
-  [-1.55, 2.15],
-  [-0.6, 3.6],
-  [0.65, 4.95],
-  [2.15, 5.7],
-  [3.5, 5.5],
-  [4.0, 4.52],
-  [3.1, 3.8],
-];
-const wavePosition = (x, y, z = 0) =>
-  waveOrigin.map((origin, i) => origin + [x, y, z][i]);
-box(wave, "Water Base", wavePosition(0, 0.22), [9.5, 0.44, 5.3], "deepWater");
-box(
-  wave,
-  "Wave Foot",
-  wavePosition(-2.4, 0.78),
-  [4.6, 1.55, 3.65],
-  "deepWater",
-  {
-    shape: PartType.Ball,
-  },
-);
-for (const [index, [x, y]] of swell.entries()) {
-  const tone = index < 4 ? "deepWater" : "turquoise";
-  box(wave, `Swell ${index + 1}`, wavePosition(x, y), [1.8, 1.8, 3.1], tone, {
-    shape: PartType.Ball,
-  });
-  if (index === 0) continue;
-  const [previousX, previousY] = swell[index - 1];
-  const dx = x - previousX;
-  const dy = y - previousY;
+addWetlandExhibits((index, name, position, size, fill, angle) => {
+  const { x } = stations[index];
+  const water = name.endsWith(" Water");
   box(
-    wave,
-    `Curve ${index}`,
-    wavePosition(x - dx / 2, y - dy / 2),
-    [Math.hypot(dx, dy) + 1.35, 1.65, 3.08],
-    tone,
+    exhibits,
+    name,
+    [x + position[0], 1.5 + position[1], -15 + position[2]],
+    size,
+    fill,
     {
-      shape: PartType.Ball,
-      angle: Math.atan2(dy, dx),
-    },
-  );
-}
-for (const [index, [x, y, z, diameter]] of [
-  [0.6, 5.8, 0.55, 0.8],
-  [1.5, 6.35, 0.55, 1.04],
-  [2.52, 6.48, 0.58, 1.12],
-  [3.62, 6.27, 0.6, 1.05],
-  [4.28, 5.68, 0.65, 0.83],
-  [4.35, 4.95, 0.78, 0.7],
-  [4.67, 4.35, 0.93, 0.43],
-  [3.86, 3.8, 1.07, 0.46],
-  [4.52, 3.53, 1.18, 0.25],
-].entries()) {
-  box(
-    wave,
-    `Whitecap ${index + 1}`,
-    wavePosition(x, y, z),
-    [diameter, diameter, diameter * 1.65],
-    "foam",
-    {
-      shape: PartType.Ball,
+      shape: water ? PartType.Block : PartType.Ball,
+      angle: ((angle ?? 0) * Math.PI) / 180,
       collide: false,
     },
   );
-}
-for (const [y, width, height, tone] of [
-  [2.5, 3, 2, "cream"],
-  [4.4, 2.6, 1.8, "coral"],
-  [6, 2.1, 1.4, "cream"],
-  [7.05, 2.8, 0.7, "ink"],
-]) {
-  box(
-    exhibits,
-    "Lighthouse Segment",
-    [0, y, -15],
-    [width, height, width],
-    tone,
-  );
-}
-for (const side of [-1, 1]) {
-  box(
-    exhibits,
-    "Bridge Pier",
-    [18 + side * 2.7, 2.85, -15],
-    [1.05, 2.7, 2],
-    "mint",
-  );
-}
-box(exhibits, "Bridge Deck", [18, 4.5, -15], [8, 0.6, 2.6], "mint");
-for (const z of [-16.1, -13.9]) {
-  box(exhibits, "Bridge Rail", [18, 5.15, z], [8, 0.25, 0.18], "ink");
-}
+});
 
 const boardSize = [10, 4, 0.7];
 const boardBefore = [0, 2, 14];
 const boardAfter = [15, 2, 14];
 box(architecture, "Welcome Board", boardAfter, boardSize, "ink", {
-  label: "EXHIBITS 01-03",
+  label: "IZUNUMA EXHIBITS 01-03",
 });
 box(exchange, "Meeting Area", [20, 0.025, 4], [17, 0.05, 13], "cream", {
   collide: false,
@@ -303,23 +232,23 @@ assert.equal(
 assert.equal(decoded.FindChildrenOfClass("Lighting").length, 1);
 assert.equal(
   decoded.FindFirstDescendantOfClass("TextLabel").Text,
-  "WATERFRONT GALLERY",
+  "IZUNUMA WETLAND GALLERY",
 );
-const savedWave = decoded
-  .FindFirstDescendantOfClass("Workspace")
-  .FindChildrenOfClass("Model")
-  .find((model) => model.Name === "Three Exhibits")
-  .FindFirstDescendantOfClass("Model");
-assert.equal(savedWave.Name, "Breaking Wave");
-const savedWhitecaps = savedWave
-  .FindChildrenOfClass("Part")
-  .filter((part) => part.Name.startsWith("Whitecap"));
-assert.equal(savedWhitecaps.length, 9);
-assert.ok(
-  savedWhitecaps.every(
-    (part) => part.Shape === PartType.Ball && part.Color3uint8.R > 0.9,
-  ),
-);
+const savedParts = decoded.FindDescendants((node) => node.IsA("Part"));
+for (const name of [
+  "White-fronted Goose White Front",
+  "Northern Pintail Pointed Tail",
+  "Makomo Leaf",
+]) {
+  const specimen = savedParts.find((part) => part.Name === name);
+  assert.ok(
+    specimen?.Shape === PartType.Ball,
+    `Missing exhibit detail: ${name}`,
+  );
+}
+const savedLabels = decoded.FindDescendantsOfClass("TextLabel");
+for (const { sign } of stations)
+  assert.ok(savedLabels.some((label) => label.Text === sign));
 const coordinates = ({ X, Y, Z }) => [X, Y, Z];
 const parts = decoded
   .FindDescendants((node) => node.IsA("Part"))

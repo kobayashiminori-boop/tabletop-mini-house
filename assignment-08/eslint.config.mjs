@@ -1,6 +1,6 @@
 export default [
   {
-    files: ["build.mjs", "lz4-portable.cjs"],
+    files: ["build.mjs", "wetland-exhibits.mjs", "lz4-portable.cjs"],
     languageOptions: {
       globals: {
         URL: "readonly",
