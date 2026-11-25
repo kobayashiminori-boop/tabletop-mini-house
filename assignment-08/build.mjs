@@ -17,6 +17,7 @@ const {
   Model,
   NormalId,
   Part,
+  PartType,
   RobloxFile,
   SpawnLocation,
   SurfaceGui,
@@ -36,6 +37,9 @@ const palette = {
   wood: "#b78056",
   mint: "#479a87",
   blue: "#438aa4",
+  deepWater: "#14587c",
+  turquoise: "#18a9c0",
+  foam: "#eefcff",
   coral: "#c86f51",
   cream: "#f1ddb3",
 };
@@ -70,7 +74,6 @@ function group(name) {
 const architecture = group("Gallery");
 const exchange = group("Conversation Corner");
 const exhibits = group("Three Exhibits");
-const parts = [];
 
 function box(
   parent,
@@ -78,17 +81,23 @@ function box(
   position,
   size,
   fill,
-  { collide = true, label, spawn = false } = {},
+  { collide = true, label, spawn = false, shape, angle = 0 } = {},
 ) {
   const part = spawn ? new SpawnLocation() : new Part();
   part.Parent = parent;
   part.Name = name;
   part.Size = vec(size);
-  part.CFrame = new CFrame(vec(position), identity);
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  part.CFrame = new CFrame(
+    vec(position),
+    angle ? [cos, -sin, 0, sin, cos, 0, 0, 0, 1] : identity,
+  );
   part.Anchored = true;
   part.CanCollide = collide;
-  part.Color = color(palette[fill]);
+  part.Color3uint8 = color(palette[fill]);
   part.Material = Material.SmoothPlastic;
+  if (shape) part.Shape = shape;
   if (spawn) {
     part.Neutral = true;
     part.Duration = 0;
@@ -107,7 +116,6 @@ function box(
     text.TextColor3 = color("#ffffff");
     text.Text = label;
   }
-  parts.push({ name, position, size, color: palette[fill], collide, label });
   return part;
 }
 
@@ -149,21 +157,83 @@ const stations = [
 ];
 for (const { x, name, tone } of stations) {
   box(exhibits, name, [x, 0.75, -15], [10, 1.5, 7], "wood");
-  box(exhibits, `${name} Label`, [x, 5.4, -25.9], [12, 2.3, 0.3], "ink", {
+  box(exhibits, `${name} Label`, [x, 0.8, -11.43], [8.6, 1.08, 0.14], "ink", {
     label: name,
   });
   box(exhibits, `${name} Accent`, [x, 0.015, -8], [8, 0.03, 0.8], tone, {
     collide: false,
   });
 }
-for (let i = 0; i < 5; i++) {
-  const height = [1, 2, 3.6, 5.1, 2.2][i];
+const wave = new Model();
+wave.Name = "Breaking Wave";
+wave.Parent = exhibits;
+const waveOrigin = [-18, 1.5, -15];
+const swell = [
+  [-4.05, 0.65],
+  [-2.7, 1.15],
+  [-1.55, 2.15],
+  [-0.6, 3.6],
+  [0.65, 4.95],
+  [2.15, 5.7],
+  [3.5, 5.5],
+  [4.0, 4.52],
+  [3.1, 3.8],
+];
+const wavePosition = (x, y, z = 0) =>
+  waveOrigin.map((origin, i) => origin + [x, y, z][i]);
+box(wave, "Water Base", wavePosition(0, 0.22), [9.5, 0.44, 5.3], "deepWater");
+box(
+  wave,
+  "Wave Foot",
+  wavePosition(-2.4, 0.78),
+  [4.6, 1.55, 3.65],
+  "deepWater",
+  {
+    shape: PartType.Ball,
+  },
+);
+for (const [index, [x, y]] of swell.entries()) {
+  const tone = index < 4 ? "deepWater" : "turquoise";
+  box(wave, `Swell ${index + 1}`, wavePosition(x, y), [1.8, 1.8, 3.1], tone, {
+    shape: PartType.Ball,
+  });
+  if (index === 0) continue;
+  const [previousX, previousY] = swell[index - 1];
+  const dx = x - previousX;
+  const dy = y - previousY;
   box(
-    exhibits,
-    "Wave Segment",
-    [-21 + i * 1.5, 1.5 + height / 2, -15],
-    [1.45, height, 2],
-    "blue",
+    wave,
+    `Curve ${index}`,
+    wavePosition(x - dx / 2, y - dy / 2),
+    [Math.hypot(dx, dy) + 1.35, 1.65, 3.08],
+    tone,
+    {
+      shape: PartType.Ball,
+      angle: Math.atan2(dy, dx),
+    },
+  );
+}
+for (const [index, [x, y, z, diameter]] of [
+  [0.6, 5.8, 0.55, 0.8],
+  [1.5, 6.35, 0.55, 1.04],
+  [2.52, 6.48, 0.58, 1.12],
+  [3.62, 6.27, 0.6, 1.05],
+  [4.28, 5.68, 0.65, 0.83],
+  [4.35, 4.95, 0.78, 0.7],
+  [4.67, 4.35, 0.93, 0.43],
+  [3.86, 3.8, 1.07, 0.46],
+  [4.52, 3.53, 1.18, 0.25],
+].entries()) {
+  box(
+    wave,
+    `Whitecap ${index + 1}`,
+    wavePosition(x, y, z),
+    [diameter, diameter, diameter * 1.65],
+    "foam",
+    {
+      shape: PartType.Ball,
+      collide: false,
+    },
   );
 }
 for (const [y, width, height, tone] of [
@@ -235,6 +305,46 @@ assert.equal(
   decoded.FindFirstDescendantOfClass("TextLabel").Text,
   "WATERFRONT GALLERY",
 );
+const savedWave = decoded
+  .FindFirstDescendantOfClass("Workspace")
+  .FindChildrenOfClass("Model")
+  .find((model) => model.Name === "Three Exhibits")
+  .FindFirstDescendantOfClass("Model");
+assert.equal(savedWave.Name, "Breaking Wave");
+const savedWhitecaps = savedWave
+  .FindChildrenOfClass("Part")
+  .filter((part) => part.Name.startsWith("Whitecap"));
+assert.equal(savedWhitecaps.length, 9);
+assert.ok(
+  savedWhitecaps.every(
+    (part) => part.Shape === PartType.Ball && part.Color3uint8.R > 0.9,
+  ),
+);
+const coordinates = ({ X, Y, Z }) => [X, Y, Z];
+const parts = decoded
+  .FindDescendants((node) => node.IsA("Part"))
+  .map((part) => {
+    const { R, G, B } = part.Color3uint8;
+    const hex = [R, G, B]
+      .map((value) =>
+        Math.round(value * 255)
+          .toString(16)
+          .padStart(2, "0"),
+      )
+      .join("");
+    return {
+      name: part.Name,
+      position: coordinates(part.CFrame.Position),
+      size: coordinates(part.Size),
+      color: `#${hex}`,
+      collide: part.CanCollide,
+      label: part
+        .FindFirstChildOfClass("SurfaceGui")
+        ?.FindFirstChildOfClass("TextLabel")?.Text,
+      angle: Math.atan2(part.CFrame.Orientation[3], part.CFrame.Orientation[0]),
+      ball: part.Shape === PartType.Ball,
+    };
+  });
 
 function entranceWidth(position) {
   const entrance = [-7, 7];
