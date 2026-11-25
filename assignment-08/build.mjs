@@ -15,16 +15,20 @@ const {
   Color3,
   Lighting,
   Material,
+  MeshType,
   Model,
   NormalId,
   Part,
   PartType,
   RobloxFile,
+  SpecialMesh,
   SpawnLocation,
   SurfaceGui,
+  SurfaceGuiSizingMode,
   TextLabel,
   UDim,
   UDim2,
+  Vector2,
   Vector3,
   Workspace,
 } = await import("rbxm-parser");
@@ -86,6 +90,7 @@ function group(name) {
 const architecture = group("Gallery");
 const exchange = group("Conversation Corner");
 const exhibits = group("Three Exhibits");
+const exhibitDimensions = [];
 
 function box(
   parent,
@@ -93,12 +98,12 @@ function box(
   position,
   size,
   fill,
-  { collide = true, label, spawn = false, shape, angle = 0 } = {},
+  { collide = true, label, spawn = false, ellipsoid = false, angle = 0 } = {},
 ) {
   const part = spawn ? new SpawnLocation() : new Part();
   part.Parent = parent;
   part.Name = name;
-  part.Size = vec(size);
+  part.Size = vec(ellipsoid ? [1, 1, 1] : size);
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
   part.CFrame = new CFrame(
@@ -109,7 +114,14 @@ function box(
   part.CanCollide = collide;
   part.Color3uint8 = color(palette[fill]);
   part.Material = Material.SmoothPlastic;
-  if (shape) part.Shape = shape;
+  if (ellipsoid) {
+    // Ball parts constrain their geometry; a sphere mesh supports independent axes.
+    const mesh = new SpecialMesh();
+    mesh.MeshType = MeshType.Sphere;
+    mesh.Scale = vec(size);
+    mesh.Parent = part;
+    exhibitDimensions.push({ name, position, size });
+  }
   if (spawn) {
     part.Neutral = true;
     part.Duration = 0;
@@ -120,11 +132,18 @@ function box(
     gui.Face = NormalId.Back;
     gui.LightInfluence = 0;
     gui.MaxDistance = 65;
+    gui.SizingMode = SurfaceGuiSizingMode.FixedSize;
+    const width = Math.round(64 * size[0]);
+    const height = Math.round(64 * size[1]);
+    gui.CanvasSize = new Vector2(width, height);
     const text = new TextLabel();
     text.Parent = gui;
     text.Size = new UDim2(new UDim(1, 0), new UDim(1, 0));
     text.BackgroundTransparency = 1;
-    text.TextScaled = true;
+    text.TextScaled = false;
+    text.TextSize = Math.floor(
+      Math.min(height * 0.76, width / (label.length * 0.66)),
+    );
     text.TextColor3 = color("#ffffff");
     text.Text = label;
   }
@@ -186,7 +205,7 @@ addWetlandExhibits((index, name, position, size, fill, angle) => {
     size,
     fill,
     {
-      shape: water ? PartType.Block : PartType.Ball,
+      ellipsoid: !water,
       angle: ((angle ?? 0) * Math.PI) / 180,
       collide: false,
     },
@@ -235,21 +254,34 @@ assert.equal(
   "IZUNUMA WETLAND GALLERY",
 );
 const savedParts = decoded.FindDescendants((node) => node.IsA("Part"));
-for (const name of [
-  "White-fronted Goose White Front",
-  "Northern Pintail Pointed Tail",
-  "Makomo Leaf",
-]) {
-  const specimen = savedParts.find((part) => part.Name === name);
+const coordinates = ({ X, Y, Z }) => [X, Y, Z];
+const approximately = (a, b) =>
+  a.every((value, i) => Math.abs(value - b[i]) < 0.0001);
+for (const { name, position, size } of exhibitDimensions) {
+  const specimen = savedParts.find(
+    (part) =>
+      part.Name === name &&
+      approximately(coordinates(part.CFrame.Position), position),
+  );
+  const mesh = specimen?.FindFirstChildOfClass("SpecialMesh");
   assert.ok(
-    specimen?.Shape === PartType.Ball,
-    `Missing exhibit detail: ${name}`,
+    specimen?.Shape === PartType.Block &&
+      mesh?.MeshType === MeshType.Sphere &&
+      approximately(coordinates(specimen.Size), [1, 1, 1]) &&
+      approximately(coordinates(mesh.Scale), size),
+    `Exhibit dimension was not preserved: ${name}`,
   );
 }
 const savedLabels = decoded.FindDescendantsOfClass("TextLabel");
 for (const { sign } of stations)
-  assert.ok(savedLabels.some((label) => label.Text === sign));
-const coordinates = ({ X, Y, Z }) => [X, Y, Z];
+  assert.ok(
+    savedLabels.some(
+      (label) =>
+        label.Text === sign &&
+        label.TextSize >= 30 &&
+        label.Parent.SizingMode === SurfaceGuiSizingMode.FixedSize,
+    ),
+  );
 const parts = decoded
   .FindDescendants((node) => node.IsA("Part"))
   .map((part) => {
@@ -261,17 +293,21 @@ const parts = decoded
           .padStart(2, "0"),
       )
       .join("");
+    const mesh = part.FindFirstChildOfClass("SpecialMesh");
+    const size = coordinates(part.Size);
     return {
       name: part.Name,
       position: coordinates(part.CFrame.Position),
-      size: coordinates(part.Size),
+      size: mesh
+        ? coordinates(mesh.Scale).map((scale, i) => scale * size[i])
+        : size,
       color: `#${hex}`,
       collide: part.CanCollide,
       label: part
         .FindFirstChildOfClass("SurfaceGui")
         ?.FindFirstChildOfClass("TextLabel")?.Text,
       angle: Math.atan2(part.CFrame.Orientation[3], part.CFrame.Orientation[0]),
-      ball: part.Shape === PartType.Ball,
+      ball: mesh?.MeshType === MeshType.Sphere,
     };
   });
 
