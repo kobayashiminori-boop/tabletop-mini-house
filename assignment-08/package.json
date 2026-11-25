@@ -4,13 +4,15 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "check": "prettier --check *.mjs *.cjs && node build.mjs",
+    "check": "prettier --check *.mjs *.cjs && eslint . && jscpd --threshold 0 --min-lines 7 --min-tokens 65 build.mjs lz4-portable.cjs && node build.mjs",
     "format": "prettier --write *.mjs *.cjs"
   },
   "dependencies": {
     "rbxm-parser": "1.1.4"
   },
   "devDependencies": {
+    "eslint": "9.39.5",
+    "jscpd": "4.3.0",
     "prettier": "3.10.1"
   },
   "engines": {

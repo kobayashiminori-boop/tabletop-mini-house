@@ -1,0 +1,16 @@
+name: Check projects
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out this repository
+        run: git clone --no-checkout "$GITHUB_SERVER_URL/kobayashiminori-boop/tabletop-mini-house.git" source && git -C source fetch origin "$GITHUB_SHA" && git -C source checkout --detach "$GITHUB_SHA"
+      - name: Run project checks
+        working-directory: source
+        run: bash tools/check-ci.sh
